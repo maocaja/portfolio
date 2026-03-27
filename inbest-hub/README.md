@@ -8,7 +8,7 @@ Real estate investors in Latin America face fragmented information across multip
 
 ## The Solution
 
-SaaS platform combining hybrid search (SQL + semantic similarity with embeddings) and a conversational AI agent that acts as a virtual sales advisor — search, compare, analyze ROI, and estimate closing costs through natural language. Part of the founding technical team — designed core architecture and delivered the MVP (Jul 2025 – Mar 2026).
+SaaS platform combining hybrid search (SQL + semantic similarity with embeddings) and a conversational AI agent that acts as a virtual sales advisor — search, compare, analyze ROI, and estimate closing costs through natural language. Part of the founding technical team — designed core architecture and delivered the MVP (Dec 2025 – Mar 2026).
 
 ## Architecture
 
