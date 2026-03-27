@@ -9,18 +9,18 @@ Software Engineer with 10+ years of experience in backend development and system
 ## Projects
 
 ### [Inbest Hub — AI Real Estate Investment Platform](./inbest-hub/)
-*Jul 2025 – Mar 2026*
+*Jul 2025 – Mar 2026 | Inbest (Startup)*
 
-SaaS platform combining hybrid search (SQL + semantic similarity) with a conversational AI agent for real estate investment analysis. Part of the founding technical team — designed core architecture and delivered the MVP. Two microservices, pgvector, LangGraph ReAct agent, real-time streaming.
+Joined as part of the founding technical team. Designed core architecture and delivered the MVP. SaaS platform combining hybrid search (SQL + semantic similarity) with a conversational AI agent for real estate investment analysis. The venture continues with another team.
 
 **Stack:** FastAPI, PostgreSQL + pgvector, LangGraph, GPT-4o-mini, React, Redis, Docker
 
 ---
 
 ### [MOC — Medical Device Case Management ERP](./moc/)
-*Jan 2026 – Mar 2026*
+*Jan 2026 – Mar 2026 | Contract — Healthcare Client*
 
-Multi-tenant B2B SaaS ERP managing the full lifecycle of medical device cases across insurance providers in Colombia's healthcare system. Led system design and core development; transitioned to the team for deployment and production rollout.
+Led system design and core development for a multi-tenant B2B SaaS ERP managing the full lifecycle of medical device cases across insurance providers in Colombia's healthcare system. Transitioned to the client's team for deployment and production rollout.
 
 **Stack:** FastAPI, SQLAlchemy 2.0 async, PostgreSQL 16, React 19, TypeScript, Docker
 
