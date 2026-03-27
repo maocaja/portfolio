@@ -28,8 +28,8 @@ Led system design and core development for a multi-tenant B2B SaaS ERP managing 
 
 ## About Me
 
-- 5 years at Rockwell Automation (450+ engineers, SAFe)
-- Backend: Kotlin, Python, TypeScript, Node.js, Golang
+- 5 years at Rockwell Automation (450+ engineers, SAFe) — GraphQL APIs, DSL tooling, microservices on Kubernetes
+- Backend: Kotlin, Java, Python, TypeScript, Node.js, Golang
 - AI: LangGraph, RAG, pgvector, embeddings
 - Based in Colombia | Open to remote positions
 
