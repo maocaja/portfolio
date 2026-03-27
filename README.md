@@ -9,7 +9,7 @@ Software Engineer with 10+ years of experience in backend development and system
 ## Projects
 
 ### [Inbest Hub — AI Real Estate Investment Platform](./inbest-hub/)
-*Jul 2024 – Mar 2026*
+*Jul 2025 – Mar 2026*
 
 SaaS platform combining hybrid search (SQL + semantic similarity) with a conversational AI agent for real estate investment analysis. Part of the founding technical team — designed core architecture and delivered the MVP. Two microservices, pgvector, LangGraph ReAct agent, real-time streaming.
 
