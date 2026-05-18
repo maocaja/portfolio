@@ -22,30 +22,28 @@ SaaS platform combining hybrid search (SQL + semantic similarity with embeddings
     │ API Gateway │
     └──┬───────┬──┘
        │       │
-┌──────▼──┐ ┌──▼──────────────┐
-│  Chat   │ │   Projects      │
-│ Service │→│   Service       │
-│         │ │                 │
-│LangGraph│ │ Hybrid Search   │
-│  ReAct  │ │ CRUD + Auth     │
-│ 5 tools │ │ Embeddings (E5) │
-│         │ │ Index Pipeline  │
-│ Redis   │ │                 │
-│(session)│ │ Repository +    │
-│         │ │ Unit of Work    │
-│ChromaDB │ │                 │
-│  (RAG)  │ │                 │
-└─────────┘ └───────┬─────────┘
-                    │
-          ┌─────────▼─────────┐
-          │   PostgreSQL 14+  │
-          │  + pgvector       │
-          │  + search_index   │
-          │  + index_queue    │
-          │                   │
-          │   Redis (cache)   │
-          │   S3 (images)     │
-          └───────────────────┘
+┌──────▼──┐ ┌──▼──────────────────┐
+│  Chat   │ │   Projects          │
+│ Service │→│   Service           │
+│         │ │                     │
+│LangGraph│ │ Hybrid Search       │
+│  ReAct  │ │ (SQL + pgvector)    │
+│ 5 tools │ │ CRUD + Auth         │
+│         │ │ Embedding Pipeline  │
+│ Redis   │ │ (OpenAI)            │
+│(session)│ │ Repository +        │
+│         │ │ Unit of Work        │
+└─────────┘ └──────────┬──────────┘
+                       │
+             ┌─────────▼─────────┐
+             │   PostgreSQL 14+  │
+             │  + pgvector (HNSW)│
+             │  + search_index   │
+             │  + index_queue    │
+             │                   │
+             │   Redis (cache)   │
+             │   S3 (images)     │
+             └───────────────────┘
 ```
 
 ## Technical Highlights
@@ -55,13 +53,12 @@ SaaS platform combining hybrid search (SQL + semantic similarity with embeddings
 **Problem:** Users search by intention ("quiet place to retire near parks"), not just structured filters.
 
 **Solution:** Combined scoring in a single SQL query:
-- 70% — structured SQL filters (city, price, bedrooms, transaction type)
-- 30% — cosine similarity between query embedding and property embeddings (pgvector)
-- 5% bonus — price competitiveness per square meter
+- **70%** — structured SQL filters (city, price, bedrooms, transaction type)
+- **30%** — cosine similarity between query embedding and property embeddings (pgvector)
 
-Embeddings generated with E5 model. Weights configurable from database without deploy.
+Weights configurable from database without redeploy. Embeddings generated with OpenAI `text-embedding-3-small` (1536 dimensions) for cost/quality balance vs. larger models.
 
-**Trade-off:** pgvector in same PostgreSQL instance = simpler operations, single query with JOIN. Won't scale beyond ~100K properties. At that point, would evaluate Pinecone or dedicated vector DB.
+**Trade-off:** pgvector in same PostgreSQL instance = simpler operations, single query with JOIN. Won't scale beyond ~100K properties. At that point, would evaluate a dedicated vector DB (Pinecone, Qdrant, Weaviate).
 
 ---
 
@@ -80,6 +77,8 @@ Embeddings generated with E5 model. Weights configurable from database without d
 | `estimate_closing_costs` | Taxes, legal fees, registration costs |
 
 The LLM (GPT-4o-mini, temperature 0.4) decides which tool to use based on user intent. Responses stream in real-time via SSE.
+
+**Why GPT-4o-mini?** ~10× cheaper than GPT-4 with acceptable quality for the conversational use case. Cost-aware design was a constraint from day one.
 
 **Why SSE over WebSocket?** Streaming is unidirectional (server → client). SSE works over standard HTTP, no protocol upgrade needed, and HTTP/2 multiplexing reduces overhead.
 
@@ -106,7 +105,7 @@ Property CRUD → index_queue (table) → Background Job → search_index
                                     └──────────────┘
 ```
 
-Embeddings cached by hash of source text — if name, description, and amenities haven't changed, no API call is made.
+Embeddings cached by hash of source text — if name, description, and amenities haven't changed, no OpenAI API call is made (saves cost + latency).
 
 **Trade-off:** Eventual consistency. There's a delay between CRUD update and search index update. Acceptable for real estate listings, not for financial transactions.
 
@@ -131,17 +130,19 @@ Sync between paths handled by the indexing pipeline.
 | Component | Technology |
 |-----------|-----------|
 | Backend (Projects) | FastAPI, SQLAlchemy 2.0 async, Pydantic v2 |
-| Backend (Chat) | FastAPI, LangGraph, GPT-4o-mini |
-| Database | PostgreSQL 14+ with pgvector extension |
-| Search | Hybrid: SQL filters + cosine similarity |
-| Embeddings | E5 model (OpenAI) |
+| Backend (Chat) | FastAPI, LangGraph, OpenAI GPT-4o-mini |
+| Database | PostgreSQL 14+ with pgvector extension (HNSW index) |
+| Search | Hybrid: SQL filters + cosine similarity (single SQL query) |
+| Embeddings | OpenAI `text-embedding-3-small` (1536-d) |
 | Sessions | Redis (production) / In-memory (development) |
 | Frontend | React, TypeScript, TanStack Query, Zustand |
-| Infrastructure | Docker, Docker Compose |
+| Auth | Auth0 (OAuth2 / JWT) |
+| Infrastructure | Docker, Docker Compose, Railway (backend), Vercel (frontend) |
 
 ## What I Would Improve
 
-- **Evaluation framework:** precision@k for search relevance, hallucination detection for the agent
-- **Observability:** Prometheus + Grafana for latency, token usage, and search quality metrics
-- **Infrastructure as Code:** Terraform for AWS deployment
-- **Scale:** Dedicated vector DB if property count exceeds 100K
+- **Evaluation framework:** precision@k for search relevance, golden-set evaluation for the agent, hallucination detection
+- **Observability:** structured logs, latency/cost dashboards (LangSmith or LangFuse), search-quality metrics
+- **Infrastructure as Code:** Terraform for AWS deployment (currently Railway)
+- **Vector store at scale:** dedicated vector DB if property count exceeds 100K
+- **Guardrails:** input validation against prompt injection, output filtering for off-topic responses
